@@ -148,6 +148,9 @@ def BoEimport(series, datefrom, vpd='y'):
 
     """
 
+    import pandas as pd
+
+
     Datefrom = datefrom
     Dateto = 'now'
     SeriesCodes = series

@@ -26,9 +26,9 @@ def ONSimport(dataset, series):
     import pandas as pd
 
 
-    # Input parameters
-    dataset = dataset.lower()
-    series = series.upper()
+    # Clean input parameters
+    dataset = dataset.lower().strip()
+    series = series.upper().replace(" ", "")
 
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \

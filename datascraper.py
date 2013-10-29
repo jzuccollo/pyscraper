@@ -8,11 +8,16 @@
 def ONSimport(dataset, series):
     """
 
-    Function to download specific series from the ONS website and return a pandas dataframe.
+    Function to download specific series from the ONS website and return a pandas dataframe. Downloads a csv from the ONS site and parses it.
 
     Takes:
         dataset: the abbreviated name of the ONS dataset (string). eg. 'qna', 'lms', 'mm23'
         series: ONS series codes to retrieve (string, comma-separated). eg. 'YBHA, ABMI'
+
+    Returns:
+        df_dict: a dict of three pandas dataframes, 'annual', 'quarterly', and
+        'monthly'. Each contains all time series from the dataset in the
+        specified frequency.
 
     Example
 
@@ -130,7 +135,7 @@ def ONSimport(dataset, series):
 def BoEimport(series, datefrom, vpd='y'):
     """
 
-    Import latest data from the Bank of England website.
+    Import latest data from the Bank of England website using csv interface.
 
     Takes:
         series: BoE series name (comma-separated strings)

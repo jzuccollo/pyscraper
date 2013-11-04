@@ -1,4 +1,4 @@
-def aapc(ser, end, freq='A', yrs=4):
+def cagr(ser, end, freq='A', yrs=4):
     """
     Takes series, returns CAGR
 

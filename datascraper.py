@@ -48,6 +48,7 @@ def ONSimport(dataset, series):
     wholecsv = []
     for row in mycsv:
         wholecsv.append(row)
+    myfile.close()
 
     # Extract the series names
     headers = wholecsv[0][1:]
@@ -85,13 +86,26 @@ def ONSimport(dataset, series):
 
     # Reshape the lists into pandas dataframes
     def transposed(lists):
-       if not lists: return []
-       return map(lambda *row: list(row), *lists)
+        """Transpose lists of data"""
+        if not lists: return []
+        return map(lambda *row: list(row), *lists)
+
+
+    def cleaner(seq):
+        """Convert list to floats and np.nans"""
+        for x in seq:
+            try:
+                yield float(x)
+            except ValueError:
+                yield np.NaN
 
 
     def to_df(dat):
+        """Convert list of lists to pandas dataframe"""
         int_series = transposed(dat)
-        return pd.DataFrame(dict(zip(headers, int_series[1:])), index=int_series[0], dtype=np.double)
+        index_list = int_series[0]
+        clean_data_lists = [list(cleaner(l)) for l in  int_series[1:]]
+        return pd.DataFrame(dict(zip(headers, clean_data_lists)), index=index_list, dtype=np.float64)
 
 
     df_dict = {}
@@ -100,6 +114,7 @@ def ONSimport(dataset, series):
             df_dict[dat[0]] = to_df(dat[1])
         except:
             print 'The', dat[0], 'frequency failed to convert to a dataframe. It may be missing for this ONS series'
+
     # Convert the indices to time series
     def start_year(df):
         return df.index.values[0][:4]
@@ -121,9 +136,9 @@ def ONSimport(dataset, series):
     ## Monthly
     try:
         from calendar import month_abbr
-        month_dict = {v.upper(): k for k,v in enumerate(month_abbr)}
+        month_dict = {v.upper() : k for k,v in enumerate(month_abbr)}
         mmonth = df_dict['monthly'].index[0][-3:]
-        df_dict['monthly'].index = pd.date_range('1/'+str(month_dict[mmonth])+'/'+start_year(df_dict['monthly']), \
+        df_dict['monthly'].index = pd.date_range('28/'+str(month_dict[mmonth])+'/'+start_year(df_dict['monthly']), \
                                                periods=len((df_dict['monthly'])), freq='M')
     except:
         print 'Error indexing monthly data. It may not exist for this series.'

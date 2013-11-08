@@ -26,7 +26,10 @@ def cagr(ser, end, freq='A', yrs=4):
 
 def trend(ser, start=pd.datetime(1998, 3, 31), yrs=5):
     """Takes series, returns exponential trend as series."""
-    aapc = cagr(ser, end, freq='Q', yrs=yrs)
+
+    import pandas as pd
+
+    aapc = cagr(ser, start, freq='Q', yrs=yrs)
     helper_list = []
     for i in np.arange(len(ser[start:])):
         helper_list.append(ser[start] * aapc ** i)

@@ -38,10 +38,7 @@ def ONSimport(dataset, series):
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
             + '&cdid=' + series
-    try:
-        myfile = urllib2.urlopen(target_url)
-    except:
-        raise Exception("Failed to retrieve series from ONS website. Is your series in the specified dataset?")
+    myfile = urllib2.urlopen(target_url)
     mycsv = csv.reader(myfile)
 
     # Move the csv to a list of lists
@@ -187,3 +184,23 @@ def BoEimport(series, datefrom, vpd='y'):
 
     return pd.read_csv(url, index_col=0, parse_dates=True, header=0)
 
+
+def quandl_ons_cleaner(dfql):
+    """Take a Quandl dataframe from the UKONS repo and make sense of the names"""
+    colnames = []
+    print 'Originally imported names are', dfql.columns.values
+
+    import re
+
+    for name in dfql.columns.values:
+        try:
+            colnames.append(re.search('UKONS\.[A-Z]{4,4} ', name).group(0)[-5:-1])
+        except AttributeError:
+            colnames.append(re.search('UKONS\.[A-Z]*_[A-Z]{4,4}', name).group(0)[-4:])
+        else:
+            pass
+
+    print 'New column names to be assigned are', colnames
+    dfql.columns = colnames
+
+    return dfql

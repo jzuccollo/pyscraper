@@ -34,17 +34,12 @@ def ONSimport(dataset, series):
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
             + '&cdid=' + series
-    try:
-        myfile = urllib2.urlopen(target_url)
-    except:
-        raise Exception("Failed to retrieve series from ONS website. Is your series in the specified dataset?")
-    mycsv = csv.reader(myfile)
+    myfile = urllib2.urlopen(target_url)
 
-    # Move the csv to a list of lists
-    wholecsv = []
-    for row in mycsv:
-        wholecsv.append(row)
-    myfile.close()
+    with csv.reader(myfile) as mycsv:
+        wholecsv = []
+        for row in mycsv:
+            wholecsv.append(row)  # Move the csv to a list of lists
 
     # Extract the series names
     headers = wholecsv[0][1:]

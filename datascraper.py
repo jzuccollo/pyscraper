@@ -1,8 +1,4 @@
 # -*- coding: utf-8 -*-
-
-# Author: James Zuccollo
-# Last revision: 24 October 2013
-
 # Functions to pull ONS and BoE data series by code and return them as a pandas dataframes.
 
 def ONSimport(dataset, series):

@@ -157,9 +157,9 @@ def _get_initial_date(yearsback):
     dt = datetime.now()
 
     try:
-        dt = dt.replace(year=dt.year-yearsback)
+        dt = dt.replace(year=dt.year - yearsback)
     except ValueError:
-        dt = dt.replace(year=dt.year-yearsback, day=dt.day-1)
+        dt = dt.replace(year=dt.year - yearsback, day=dt.day - 1)
     return dt
 
 
@@ -187,7 +187,8 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
 
     import pandas as pd
 
-    Datefrom =  datefrom if datefrom is not None else _get_initial_date(yearsback)
+    Datefrom = datefrom if datefrom is not None else _get_initial_date(
+        yearsback)
     Dateto = 'now'
     SeriesCodes = series
     UsingCodes = 'Y'

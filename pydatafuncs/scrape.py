@@ -3,7 +3,7 @@
 # pandas dataframes.
 
 
-def ONSimport(dataset, series):
+def from_ONS(dataset, series):
     """
 
     Function to download specific series from the ONS website and return a pandas dataframe. Downloads a csv from the ONS site and parses it.
@@ -145,7 +145,7 @@ def ONSimport(dataset, series):
     return df_dict
 
 
-def BoEimport(series, datefrom, vpd='y'):
+def from_BoE(series, datefrom, vpd='y'):
     """
 
     Import latest data from the Bank of England website using csv interface.

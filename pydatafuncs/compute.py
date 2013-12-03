@@ -11,6 +11,7 @@ def cagr(ser, end, freq='A', yrs=4):
     """
 
     from calendar import month_name
+    import pandas as pd
 
     freq_dict = {'A': 1., 'Q': 4., 'M': 12.}
     freq_offset = {'A': pd.datetools.YearEnd(

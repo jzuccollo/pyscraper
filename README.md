@@ -13,4 +13,4 @@ Available functions are `scraper.ONSimport` and `scraper.BoEimport`.
 
 Convenience functions not included in SciPy.
 
-Available at the moment is `compute.cagr` and `compute.trend`.
+Available at the moment are `compute.cagr` and `compute.trend`.

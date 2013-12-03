@@ -13,7 +13,7 @@ setup(name='pydatafuncs',
       license='MIT',
       packages=['pydatafuncs'],
       install_requires=[
-          'pandas', 'csv', 'urllib2', 're', 'numpy', 'calendar'
+          'pandas', 'numpy'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

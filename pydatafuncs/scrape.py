@@ -58,6 +58,7 @@ def from_ONS(dataset, series):
                     metadata[line[0]] = line[1]
             except:
                 print 'Skipping line', index, 'in metadata search'
+
     # Split the data into annual/monthly/quarterly
 
     # Compile regular expressions to split the dates
@@ -145,7 +146,24 @@ def from_ONS(dataset, series):
     return df_dict
 
 
-def from_BoE(series, datefrom, vpd='y'):
+def _get_initial_date(yearsback):
+    """
+    Returns the date yearsback years before today.
+
+    """
+
+    from datetime import datetime
+
+    dt = datetime.now()
+
+    try:
+        dt = dt.replace(year=dt.year-yearsback)
+    except ValueError:
+        dt = dt.replace(year=dt.year-yearsback, day=dt.day-1)
+    return dt
+
+
+def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     """
 
     Import latest data from the Bank of England website using csv interface.
@@ -153,11 +171,12 @@ def from_BoE(series, datefrom, vpd='y'):
     Takes:
         series: BoE series name (comma-separated strings)
         datefrom: Initial date of series (date string, 'DD/MON/YYYY')
+        yearsback: If datefrom is not specified, how many years of data would you like, counting backwards from today?
 
     Returns:
         df: Pandas dataframe of time series
 
-    eg. df = importBoE('LPMAUZI,LPMAVAA', '01/Oct/2007 ')
+    eg. df = importBoE('LPMAUZI,LPMAVAA', datefrom='01/Oct/2007 ')
 
 
     Optional arguments:
@@ -168,7 +187,7 @@ def from_BoE(series, datefrom, vpd='y'):
 
     import pandas as pd
 
-    Datefrom = datefrom
+    Datefrom =  datefrom if datefrom is not None else _get_initial_date(yearsback)
     Dateto = 'now'
     SeriesCodes = series
     UsingCodes = 'Y'

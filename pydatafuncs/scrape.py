@@ -2,8 +2,47 @@
 # Functions to pull ONS and BoE data series by code and return them as a
 # pandas dataframes.
 
+# ONS IMPORTER
 
-def from_ONS(dataset, series):
+import pandas as pd
+
+def _retrieve_ONS_csv(dataset, series):
+    """Return csv file with required dataset and series"""
+    from urllib2 import urlopen
+    # Clean input parameters
+    dataset = dataset.lower().strip()
+    series = series.upper().replace(" ", "")
+    # Grab the raw csv
+    target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
+        + '&cdid=' + series
+    return urlopen(target_url)
+
+
+def _create_quarterly_index(dfindex):
+    """Takes a pandas dataframe index, '2002 Q2', and returns DatetimeIndex"""
+
+    thedate = dfindex.values[0].split()
+    starting_quarter = str(3 * int(thedate[1][-1]))
+    starting_year = thedate[0]
+    df2index = pd.date_range('1/' + starting_quarter + '/' + starting_year,
+                                               periods=len(dfindex), freq='Q-DEC')
+    return df2index
+
+
+def _timeseries_index(df, freq):
+    """Takes dataframe and converts first column to DateTimeIndex"""
+    df2 = df.set_index('Unnamed: 0')
+    try:
+        df2.index = pd.to_datetime(df2.index, errors='raise')
+    except ValueError as e:  # to_datetime can't parse '2010 Q2' dates
+        if e.message != "unknown string format":
+            raise
+        else:
+            df2.index = _create_quarterly_index(df2.index)
+    return df2
+
+
+def from_ONS(dataset, series, freq):
     """
 
     Function to download specific series from the ONS website and return a pandas dataframe. Downloads a csv from the ONS site and parses it.
@@ -11,6 +50,7 @@ def from_ONS(dataset, series):
     Takes:
         dataset: the abbreviated name of the ONS dataset (string). eg. 'qna', 'lms', 'mm23'
         series: ONS series codes to retrieve (string, comma-separated). eg. 'YBHA, ABMI'
+        freq: frequency of data required, {'A', 'Q', 'M'}
 
     Returns:
         df_dict: a dict of three pandas dataframes, 'annual', 'quarterly', and
@@ -19,132 +59,27 @@ def from_ONS(dataset, series):
 
     Example
 
-    ONSimport('qna', 'YBHA, ABMI')
+    from_ONS('qna', 'YBHA, ABMI', 'Q')
     """
 
-    import csv
-    import urllib2
-    import re
-    import numpy as np
-    import pandas as pd
+    re_dict = {'Q' : '\d{4,4} Q\d$',
+    'A' : '\d{4,4}$',
+    'M' : '\d{4,4} [A-Z]{3,3}$'}
 
-    # Clean input parameters
-    dataset = dataset.lower().strip()
-    series = series.upper().replace(" ", "")
+    myfile = _retrieve_ONS_csv(dataset, series)
+    dfraw = pd.read_csv(myfile)
+    criterion = dfraw['Unnamed: 0'].str.contains(re_dict[freq], na=False)
+    if dfraw[criterion].empty:
+        print "That frequency is unavailable for your series."
+        return
+    else:
+        df = _timeseries_index(dfraw[criterion], freq)
+    df = df.astype(float)
 
-    # Grab the raw csv
-    target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
-        + '&cdid=' + series
-    myfile = urllib2.urlopen(target_url)
+    return df
 
-    with csv.reader(myfile) as mycsv:
-        wholecsv = []
-        for row in mycsv:
-            wholecsv.append(row)  # Move the csv to a list of lists
 
-    # Extract the series names
-    headers = wholecsv[0][1:]
-
-    # Find the first blank row, denoting the end of the data
-    blankrow = [index for index, line in enumerate(wholecsv) if line == []][0]
-    data = wholecsv[1:blankrow]
-
-    # Grab the names of the series
-    metadata = {}
-    for series in headers:
-        for index, line in enumerate(wholecsv):
-            try:
-                if line[0].find(series) >= 0:
-                    metadata[line[0]] = line[1]
-            except:
-                print 'Skipping line', index, 'in metadata search'
-
-    # Split the data into annual/monthly/quarterly
-
-    # Compile regular expressions to split the dates
-    quarterly_re = re.compile('\d{4,4} Q\d$')
-    annual_re = re.compile('\d{4,4}$')
-    monthly_re = re.compile('\d{4,4} [A-Z]{3,3}$')
-
-    # Create separate lists for each dataset
-    quarterly_data = []
-    monthly_data = []
-    annual_data = []
-
-    for line in data:
-        if annual_re.match(line[0]):
-            annual_data.append(line)
-        elif quarterly_re.match(line[0]):
-            quarterly_data.append(line)
-        elif monthly_re.match(line[0]):
-            monthly_data.append(line)
-        else:
-            print line, 'cannot be sorted.'
-
-    # Reshape the lists into pandas dataframes
-    def transposed(lists):
-        """Transpose lists of data"""
-        if not lists:
-            return []
-        return map(lambda *row: list(row), *lists)
-
-    def cleaner(seq):
-        """Convert list to floats and np.nans"""
-        for x in seq:
-            try:
-                yield float(x)
-            except ValueError:
-                yield np.NaN
-
-    def to_df(dat):
-        """Convert list of lists to pandas dataframe"""
-        int_series = transposed(dat)
-        index_list = int_series[0]
-        clean_data_lists = [list(cleaner(l)) for l in int_series[1:]]
-        return (
-            pd.DataFrame(dict(zip(headers, clean_data_lists)),
-                         index=index_list, dtype=np.float64)
-        )
-
-    df_dict = {}
-    for dat in [('annual', annual_data), ('monthly', monthly_data), ('quarterly', quarterly_data)]:
-        try:
-            df_dict[dat[0]] = to_df(dat[1])
-        except:
-            print 'The', dat[0], 'frequency failed to convert to a dataframe. It may be missing for this ONS series'
-
-    # Convert the indices to time series
-    def start_year(df):
-        return df.index.values[0][:4]
-
-    # Quarterly
-    try:
-        qmnth = str(3 * int(df_dict['quarterly'].index.values[0][-1]))
-        df_dict[
-            'quarterly'].index = pd.date_range('1/' + qmnth + '/' + start_year(df_dict['quarterly']),
-                                               periods=len((df_dict['quarterly'])), freq='Q-DEC')
-    except:
-        print 'Error indexing quarterly data. It may not exist for this series.'
-
-    # Annual
-    try:
-        df_dict['annual'].index = pd.date_range(start_year(df_dict['annual']),
-                                                periods=len((df_dict['annual'])), freq='A')
-    except:
-        print 'Error indexing annual data. It may not exist for this series.'
-    # Monthly
-    try:
-        from calendar import month_abbr
-        month_dict = {v.upper(): k for k, v in enumerate(month_abbr)}
-        mmonth = df_dict['monthly'].index[0][-3:]
-        df_dict[
-            'monthly'].index = pd.date_range('28/' + str(month_dict[mmonth]) + '/' + start_year(df_dict['monthly']),
-                                             periods=len((df_dict['monthly'])), freq='M')
-    except:
-        print 'Error indexing monthly data. It may not exist for this series.'
-
-    return df_dict
-
+# BoE IMPORTER
 
 def _get_initial_date(yearsback):
     """

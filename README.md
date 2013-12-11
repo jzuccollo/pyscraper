@@ -1,16 +1,10 @@
-pydata-helpers
-==============
+pydatafuncs
+===========
 
 Useful functions for working with data in Python.
 
 ## Scraper
 
-For anyone who has had the frustration of trying to import time series from the Bank of England or UK Office of National Statistics. The functions here will pull your desired series into a pandas dataframe.
+For anyone who has had the frustration of trying to import official time series. The functions here will pull your desired series into a pandas dataframe. This functionality is gradually being replaced by Quandl, but not all ONS and BoE series are available there. 
 
-Available functions are `scraper.ONSimport` and `scraper.BoEimport`.
-
-## Computation
-
-Convenience functions not included in SciPy.
-
-Available at the moment are `compute.cagr` and `compute.trend`.
+Scrapers are available here for ONS, BoE, and IMF data.

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-# Functions to pull ONS and BoE data series by code and return them as a
-# pandas dataframes.
+# Scrapers returning pandas dataframes.
 
 # ONS IMPORTER
 
@@ -15,7 +14,7 @@ def _retrieve_ONS_csv(dataset, series):
     series = series.upper().replace(" ", "")
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
-        + '&cdid=' + series
+        + '&cdid=' + ','.join(series)
     return urlopen(target_url)
 
 
@@ -50,7 +49,7 @@ def from_ONS(dataset, series, freq):
 
     Takes:
         dataset: the abbreviated name of the ONS dataset (string). eg. 'qna', 'lms', 'mm23'
-        series: ONS series codes to retrieve (string, comma-separated). eg. 'YBHA, ABMI'
+        series: ONS series codes to retrieve (list of strings). eg. 'YBHA, ABMI'
         freq: frequency of data required, {'A', 'Q', 'M'}
 
     Returns:
@@ -67,6 +66,7 @@ def from_ONS(dataset, series, freq):
                'A': '\d{4,4}$',
                'M': '\d{4,4} [A-Z]{3,3}$'}
 
+    freq = freq.upper()
     myfile = _retrieve_ONS_csv(dataset, series)
     dfraw = pd.read_csv(myfile)
     criterion = dfraw['Unnamed: 0'].str.contains(re_dict[freq], na=False)
@@ -105,7 +105,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     Import latest data from the Bank of England website using csv interface.
 
     Takes:
-        series: BoE series name (comma-separated strings)
+        series: BoE series names (list of strings)
         datefrom: Initial date of series (date string, 'DD/MON/YYYY')
         yearsback: If datefrom is not specified, how many years of data would you like, counting backwards from today?
 
@@ -126,7 +126,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     Datefrom = datefrom if datefrom is not None else _get_initial_date(
         yearsback)
     Dateto = 'now'
-    SeriesCodes = series
+    SeriesCodes = ','.join(series)
     UsingCodes = 'Y'
     CSVF = 'TN'
     VPD = vpd
@@ -140,6 +140,8 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
 
     return pd.read_csv(url, index_col=0, parse_dates=True, header=0)
 
+# IMF IMPORTER
+
 
 def from_IMF(dataset, series=None, countries=None):
     """
@@ -148,8 +150,8 @@ def from_IMF(dataset, series=None, countries=None):
 
     Takes:
         dataset: IMF dataset (string, currently accepts 'weo' or 'pubfin')
-        series: Series codes to return (optional).
-        countries: Country names (not codes) to include (optional).
+        series: Series codes to return (optional, default returns all).
+        countries: Country names (not codes) to include (optional, default returns all).
 
     Returns:
         panel: Pandas panel of time series
@@ -162,10 +164,16 @@ def from_IMF(dataset, series=None, countries=None):
     if in_data == 'weo':
         rawdata = _get_weo_data()
     elif in_data == 'pubfin':
-        rawdata == _get_pubfin_data()
+        rawdata = _get_pubfin_data()
     else:
         raise ValueError("Unrecognised dataset.")
 
+    if series is None and countries is None:
+        return rawdata
+    if series is None:
+        return rawdata.loc[:, countries, :]
+    if countries is None:
+        return rawdata.loc[series, :, :]
     return rawdata.loc[series, countries, :]
 
 

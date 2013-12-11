@@ -112,7 +112,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     Returns:
         df: Pandas dataframe of time series
 
-    eg. df = importBoE('LPMAUZI,LPMAVAA', datefrom='01/Oct/2007 ')
+    eg. df = from_BoE('LPMAUZI,LPMAVAA', datefrom='01/Oct/2007 ')
 
 
     Optional arguments:
@@ -139,3 +139,105 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
         + '&VPD=' + VPD
 
     return pd.read_csv(url, index_col=0, parse_dates=True, header=0)
+
+
+def from_IMF(dataset, series=None, countries=None):
+    """
+
+    Import latest data from the IMF website.
+
+    Takes:
+        dataset: IMF dataset (string, currently accepts 'weo' or 'pubfin')
+        series: Series codes to return (optional).
+        countries: Country names (not codes) to include (optional).
+
+    Returns:
+        panel: Pandas panel of time series
+
+    eg. df = from_IMF('weo', series='GGSB_NPGDP, GGXB', countries='UK')
+
+    """
+
+    in_data = dataset.lower().strip()
+    if in_data == 'weo':
+        rawdata = _get_weo_data()
+    elif in_data == 'pubfin':
+        rawdata == _get_pubfin_data()
+    else:
+        raise ValueError("Unrecognised dataset.")
+
+    return rawdata.loc[series, countries, :]
+
+
+def _get_pubfin_data():
+    """Return the IMF Public Finances in Modern History dataset as a pandas panel object"""
+
+    import pandas as pd
+    from zipfile import ZipFile
+    from urllib2 import urlopen
+    from StringIO import StringIO
+
+    zipFileURL = "http://www.imf.org/external/pubs/ft/wp/2013/data/wp1305.zip"
+    xlsx_name = "Historical Public Finance Dataset_1.xlsx"
+
+    IMFzip = urlopen(zipFileURL)
+    IMFdata = ZipFile(StringIO(IMFzip.read()))
+    dfraw = pd.read_excel(IMFdata.open(xlsx_name), "data")
+    df = dfraw.set_index(['country', 'year'])
+
+    yr_one = int(df.index.levels[1][0])
+    yr_last = int(df.index.levels[1][-1])
+    yrindex = pd.date_range(start=pd.datetime(yr_one, 12, 31),
+                            end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
+
+    df.index.levels[1] = yrindex
+
+    return df.to_panel()
+
+
+def _get_weo_data():
+    """Return the IMF WEO dataset as a pandas panel object"""
+
+    import pandas as pd
+    from urllib2 import urlopen
+
+    FileURL = "http://www.imf.org/external/pubs/ft/weo/2013/02/weodata/WEOOct2013all.xls"
+
+    # Read in raw table
+    IMFweo = urlopen(FileURL)
+    dfraw = pd.read_table(IMFweo,
+                          na_values=['n/a', '--'])
+
+    # Drop unneeded columns
+    keep_cols = [u'WEO Subject Code', u'Country']
+    for i in dfraw.columns.values:
+        if i.isdigit():
+            keep_cols.append(i)
+    dfdropped = dfraw[keep_cols]
+
+    # Set multiindex
+    dfdropped.set_index([u'Country', u'WEO Subject Code'], inplace=True)
+
+    # Reshape so variables are the columns
+    dfdropped = dfdropped.stack().unstack(level=1)
+
+    # Create timestamps for time index
+    yr_one = int(dfdropped.index.levels[1][0])
+    yr_last = int(dfdropped.index.levels[1][-1])
+    time_index = pd.date_range(
+        start=pd.datetime(yr_one, 12, 31), end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
+    dfdropped.index.levels[1] = time_index
+
+    # Convert data to floats
+    def float_convert(s):
+        if isinstance(s, str):
+            return float(s.replace(',', ''))
+        elif isinstance(s, float):
+            return s
+        else:
+            print "Encountered type", type(s)
+
+    dftyped = dfdropped.applymap(float_convert)
+
+    # Convert to panel
+    return dftyped.to_panel()

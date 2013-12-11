@@ -6,6 +6,7 @@
 
 import pandas as pd
 
+
 def _retrieve_ONS_csv(dataset, series):
     """Return csv file with required dataset and series"""
     from urllib2 import urlopen
@@ -25,7 +26,7 @@ def _create_quarterly_index(dfindex):
     starting_quarter = str(3 * int(thedate[1][-1]))
     starting_year = thedate[0]
     df2index = pd.date_range('1/' + starting_quarter + '/' + starting_year,
-                                               periods=len(dfindex), freq='Q-DEC')
+                             periods=len(dfindex), freq='Q-DEC')
     return df2index
 
 
@@ -62,9 +63,9 @@ def from_ONS(dataset, series, freq):
     from_ONS('qna', 'YBHA, ABMI', 'Q')
     """
 
-    re_dict = {'Q' : '\d{4,4} Q\d$',
-    'A' : '\d{4,4}$',
-    'M' : '\d{4,4} [A-Z]{3,3}$'}
+    re_dict = {'Q': '\d{4,4} Q\d$',
+               'A': '\d{4,4}$',
+               'M': '\d{4,4} [A-Z]{3,3}$'}
 
     myfile = _retrieve_ONS_csv(dataset, series)
     dfraw = pd.read_csv(myfile)

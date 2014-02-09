@@ -3,7 +3,7 @@
 
 # ONS IMPORTER
 
-import pandas as pd
+#import pandas as pd
 
 
 def _retrieve_ONS_csv(dataset, series):
@@ -29,7 +29,7 @@ def _create_quarterly_index(dfindex):
     return df2index
 
 
-def _timeseries_index(df, freq):
+def _timeseries_index(df):
     """Takes dataframe and converts first column to DateTimeIndex"""
     df2 = df.set_index('Unnamed: 0')
     try:
@@ -45,7 +45,8 @@ def _timeseries_index(df, freq):
 def from_ONS(dataset, series, freq):
     """
 
-    Function to download specific series from the ONS website and return a pandas dataframe. Downloads a csv from the ONS site and parses it.
+    Function to download specific series from the ONS website and 
+    return a pandas dataframe. Downloads a csv from the ONS site and parses it.
 
     Takes:
         dataset: the abbreviated name of the ONS dataset (string). eg. 'qna', 'lms', 'mm23'
@@ -62,9 +63,9 @@ def from_ONS(dataset, series, freq):
     from_ONS('qna', 'YBHA, ABMI', 'Q')
     """
 
-    re_dict = {'Q': '\d{4,4} Q\d$',
-               'A': '\d{4,4}$',
-               'M': '\d{4,4} [A-Z]{3,3}$'}
+    re_dict = {'Q': r'\d{4,4} Q\d$',
+               'A': r'\d{4,4}$',
+               'M': r'\d{4,4} [A-Z]{3,3}$'}
 
     freq = freq.upper()
     myfile = _retrieve_ONS_csv(dataset, series)
@@ -107,7 +108,8 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     Takes:
         series: BoE series names (list of strings)
         datefrom: Initial date of series (date string, 'DD/MON/YYYY')
-        yearsback: If datefrom is not specified, how many years of data would you like, counting backwards from today?
+        yearsback: If datefrom is not specified, how many years of 
+                   data would you like, counting backwards from today?
 
     Returns:
         df: Pandas dataframe of time series
@@ -178,9 +180,12 @@ def from_IMF(dataset, series=None, countries=None):
 
 
 def _get_pubfin_data():
-    """Return the IMF Public Finances in Modern History dataset as a pandas panel object"""
+    """
+    Return the IMF Public Finances in Modern History dataset 
+    as a pandas panel object
+    """
 
-    import pandas as pd
+    #import pandas as pd
     from zipfile import ZipFile
     from urllib2 import urlopen
     from StringIO import StringIO
@@ -201,6 +206,16 @@ def _get_pubfin_data():
     df.index.levels[1] = yrindex
 
     return df.to_panel()
+
+
+def float_convert(s):
+    """Convert data to floats"""
+    if isinstance(s, str):
+        return float(s.replace(',', ''))
+    elif isinstance(s, float):
+        return s
+    else:
+        print "Encountered type", type(s)
 
 
 def _get_weo_data():
@@ -235,15 +250,6 @@ def _get_weo_data():
     time_index = pd.date_range(
         start=pd.datetime(yr_one, 12, 31), end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
     dfdropped.index.levels[1] = time_index
-
-    # Convert data to floats
-    def float_convert(s):
-        if isinstance(s, str):
-            return float(s.replace(',', ''))
-        elif isinstance(s, float):
-            return s
-        else:
-            print "Encountered type", type(s)
 
     dftyped = dfdropped.applymap(float_convert)
 

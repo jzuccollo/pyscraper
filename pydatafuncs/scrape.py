@@ -11,7 +11,7 @@ def _retrieve_ONS_csv(dataset, series):
     from urllib2 import urlopen
     # Clean input parameters
     dataset = dataset.lower().strip()
-    series = series.upper().replace(" ", "")
+    series = [s.upper().replace(" ", "") for s in series]
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
         + '&cdid=' + ','.join(series)

@@ -1,10 +1,13 @@
-pydatafuncs
-===========
+#pydatafuncs
 
-Useful functions for working with data in Python.
+A script to scrape series from the UK Office for National Statistics, Bank of England, and International Monetary Fund. A few utility and computational tools are also included.
 
-## Scraper
+## `pydatafuncs.scrape`
 
-For anyone who has had the frustration of trying to import official time series. The functions here will pull your desired series into a pandas dataframe. This functionality is gradually being replaced by Quandl, but not all ONS and BoE series are available there. 
+Despite the advent of (Quandl)[http://www.quandl.com] there are still many series an analyst will need that are only available in spreadsheets. The functions here will pull your desired time series into a pandas dataframe. There are three core functions in the module:
 
-Scrapers are available here for ONS, BoE, and IMF data.
+ - `from_ONS(dataset, series, freq)`
+ - `from_BoE(series, datefrom=None, yearsback=5, vpd='y')`
+ - `from_IMF(dataset, series=None, countries=None)`
+
+See docstrings for details.

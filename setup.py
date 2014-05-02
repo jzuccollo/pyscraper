@@ -7,7 +7,7 @@ def readme():
 
 setup(name='pydatafuncs',
       version='0.1.0',
-      description='Useful time series importation and manipulation functions',
+      description='Time series importation and manipulation functions',
       url='http://github.com/jzuccollo/pydatafuncs',
       author='jzuccollo',
       author_email='james.zuccollo@reform.co.uk',

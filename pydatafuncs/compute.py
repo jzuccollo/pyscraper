@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def cagr(ser, end, freq='A', yrs=4):
     """
     Takes series, returns CAGR
@@ -11,26 +14,23 @@ def cagr(ser, end, freq='A', yrs=4):
     """
 
     from calendar import month_name
-    import pandas as pd
 
     freq_dict = {'A': 1., 'Q': 4., 'M': 12.}
     freq_offset = {'A': pd.datetools.YearEnd(
     ), 'Q': pd.datetools.QuarterEnd(), 'M': pd.datetools.MonthEnd()}
     periods = int(yrs * freq_dict[freq])
 
-    cagr = 100 * \
+    cagr_val = 100 * \
         ((ser[end] / ser[end - periods * freq_offset[freq]])
          ** (1. / yrs) - 1.)
     print 'The CAGR for the', yrs, 'years to', month_name[end.month], end.year, 'is', \
         round(cagr, 2), 'per cent per annum.'
 
-    return cagr
+    return cagr_val
 
 
 def trend(ser, start=pd.datetime(1998, 3, 31), yrs=5):
     """Takes series, returns exponential trend as series."""
-
-    import pandas as pd
 
     aapc = cagr(ser, start + yrs * pd.DateOffset.year(),
                 end, freq='Q', yrs=yrs)

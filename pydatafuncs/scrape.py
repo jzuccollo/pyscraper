@@ -3,7 +3,7 @@
 
 # ONS IMPORTER
 
-#import pandas as pd
+import pandas as pd
 
 
 def _retrieve_ONS_csv(dataset, series):
@@ -29,38 +29,33 @@ def _create_quarterly_index(dfindex):
     return df2index
 
 
-def _timeseries_index(df):
+def _timeseries_index(df, freq):
     """Takes dataframe and converts first column to DateTimeIndex"""
     df2 = df.set_index('Unnamed: 0')
-    try:
+    if freq == 'Q':
+        df2.index = _create_quarterly_index(df2.index)
+    else:
         df2.index = pd.to_datetime(df2.index, errors='raise')
-    except ValueError as e:  # to_datetime can't parse '2010 Q2' dates
-        if e.message != "unknown string format":
-            raise
-        else:
-            df2.index = _create_quarterly_index(df2.index)
     return df2
 
 
 def from_ONS(dataset, series, freq):
     """
 
-    Function to download specific series from the ONS website and 
+    Function to download specific series from the ONS website and
     return a pandas dataframe. Downloads a csv from the ONS site and parses it.
 
     Takes:
         dataset: the abbreviated name of the ONS dataset (string). eg. 'qna', 'lms', 'mm23'
-        series: ONS series codes to retrieve (list of strings). eg. 'YBHA, ABMI'
+        series: ONS series codes to retrieve (list of strings). eg. ['YBHA', 'ABMI']
         freq: frequency of data required, {'A', 'Q', 'M'}
 
     Returns:
-        df_dict: a dict of three pandas dataframes, 'annual', 'quarterly', and
-        'monthly'. Each contains all time series from the dataset in the
-        specified frequency.
+        A pandas dataframe.
 
     Example
 
-    from_ONS('qna', 'YBHA, ABMI', 'Q')
+    from_ONS('qna', ['YBHA', 'ABMI'], 'Q')
     """
 
     re_dict = {'Q': r'\d{4,4} Q\d$',
@@ -91,13 +86,14 @@ def _get_initial_date(yearsback):
 
     from datetime import datetime
 
-    dt = datetime.now()
+    initial_date = datetime.now()
 
     try:
-        dt = dt.replace(year=dt.year - yearsback)
+        initial_date = initial_date.replace(year=initial_date.year - yearsback)
     except ValueError:
-        dt = dt.replace(year=dt.year - yearsback, day=dt.day - 1)
-    return dt
+        initial_date = initial_date.replace(
+            year=initial_date.year - yearsback, day=initial_date.day - 1)
+    return initial_date.strftime("%d/%b/%Y")
 
 
 def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
@@ -107,14 +103,14 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
 
     Takes:
         series: BoE series names (list of strings)
-        datefrom: Initial date of series (date string, 'DD/MON/YYYY')
-        yearsback: If datefrom is not specified, how many years of 
+        datefrom: Initial date of series (pandas datetime)
+        yearsback: If datefrom is not specified, how many years of
                    data would you like, counting backwards from today?
 
     Returns:
         df: Pandas dataframe of time series
 
-    eg. df = from_BoE('LPMAUZI,LPMAVAA', datefrom='01/Oct/2007 ')
+    eg. df = from_BoE(['LPMAUZI', 'LPMAVAA'], datefrom=pd.datetime(2007, 08, 01))
 
 
     Optional arguments:
@@ -122,8 +118,6 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
        vpd:	Include provisional data? ('Y' or 'N')
 
     """
-
-    import pandas as pd
 
     Datefrom = datefrom if datefrom is not None else _get_initial_date(
         yearsback)
@@ -133,7 +127,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     CSVF = 'TN'
     VPD = vpd
 
-    url = 'http://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&Datefrom=' + Datefrom \
+    url = 'http://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&Datefrom=' + Datefrom.strftime("%d/%b/%Y") \
         + '&Dateto=' + Dateto \
         + '&SeriesCodes=' + SeriesCodes \
         + '&UsingCodes=' + UsingCodes \
@@ -152,16 +146,18 @@ def from_IMF(dataset, series=None, countries=None):
 
     Takes:
         dataset: IMF dataset (string, currently accepts 'weo' or 'pubfin')
-        series: Series codes to return (optional, default returns all).
-        countries: Country names (not codes) to include (optional, default returns all).
+        series: Series codes to return (list of strings. Optional, default returns all).
+        countries: Country names (not codes) to include (list of strings. Optional, default returns all).
 
     Returns:
         panel: Pandas panel of time series
 
-    eg. df = from_IMF('weo', series='GGSB_NPGDP, GGXB', countries='UK')
+    eg. df = from_IMF('weo', series=['GGSB_NPGDP', 'GGX_NGDP'], countries=['United Kingdom'])
+
+        df = from_IMF('pubfin', series=['rev', 'prim_exp'], countries=['United Kingdom'])
 
     """
-
+    # Grab the right dataset
     in_data = dataset.lower().strip()
     if in_data == 'weo':
         rawdata = _get_weo_data()
@@ -181,11 +177,10 @@ def from_IMF(dataset, series=None, countries=None):
 
 def _get_pubfin_data():
     """
-    Return the IMF Public Finances in Modern History dataset 
+    Return the IMF Public Finances in Modern History dataset
     as a pandas panel object
     """
 
-    #import pandas as pd
     from zipfile import ZipFile
     from urllib2 import urlopen
     from StringIO import StringIO
@@ -198,12 +193,12 @@ def _get_pubfin_data():
     dfraw = pd.read_excel(IMFdata.open(xlsx_name), "data")
     df = dfraw.set_index(['country', 'year'])
 
-    yr_one = int(df.index.levels[1][0])
-    yr_last = int(df.index.levels[1][-1])
-    yrindex = pd.date_range(start=pd.datetime(yr_one, 12, 31),
-                            end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
+    #yr_one = int(df.index.levels[1][0])
+    #yr_last = int(df.index.levels[1][-1])
+    # yrindex = pd.date_range(start=pd.datetime(yr_one, 12, 31),
+    #                        end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
 
-    df.index.levels[1] = yrindex
+    #df.index.levels[1] = yrindex
 
     return df.to_panel()
 
@@ -221,7 +216,6 @@ def float_convert(s):
 def _get_weo_data():
     """Return the IMF WEO dataset as a pandas panel object"""
 
-    import pandas as pd
     from urllib2 import urlopen
 
     FileURL = "http://www.imf.org/external/pubs/ft/weo/2013/02/weodata/WEOOct2013all.xls"
@@ -245,11 +239,13 @@ def _get_weo_data():
     dfdropped = dfdropped.stack().unstack(level=1)
 
     # Create timestamps for time index
-    yr_one = int(dfdropped.index.levels[1][0])
-    yr_last = int(dfdropped.index.levels[1][-1])
-    time_index = pd.date_range(
-        start=pd.datetime(yr_one, 12, 31), end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
-    dfdropped.index.levels[1] = time_index
+    #yr_one = int(dfdropped.index.levels[1][0])
+    #yr_last = int(dfdropped.index.levels[1][-1])
+    # time_index = pd.date_range(
+    #    start=pd.datetime(yr_one, 12, 31),
+    #    end=pd.datetime(yr_last, 12, 31), freq='A-DEC')
+    # dfdropped.index.levels[1] = time_index  #multi-index levels are now
+    # immutable
 
     dftyped = dfdropped.applymap(float_convert)
 

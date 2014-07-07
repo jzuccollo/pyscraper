@@ -15,3 +15,9 @@ Despite the advent of [Quandl](http://www.quandl.com) there are still many serie
  - `from_IMF(dataset, series=None, countries=None)`: Scrapes the IMF's [World Economic Outlook](http://www.imf.org/external/ns/cs.aspx?id=29) and [Public Finances in Modern History Database](http://www.imf.org/external/np/fad/histdb/).
 
 See docstrings for syntax details.
+
+## `deseasonalise` module
+
+Python wrapper on X-13ARIMA-SEATS to deseasonalise time series data. Takes and returns a `pandas` dataframe. Requires [X-13ARIMA-SEATS](https://www.census.gov/srd/www/x13as/) executable to be installed. Module has one function, `deseasonalise`, which takes either a dataframe or series and returns the same adjusted.
+
+Note that the path to X-13 is hardcoded in `deseasonalise.py` as `C:/Program Files (x86)/winx13/x13as/x13as.exe`.

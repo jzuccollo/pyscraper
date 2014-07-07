@@ -7,15 +7,14 @@ import pandas as pd
 
 
 def _retrieve_ONS_csv(dataset, series):
-    """Return csv file with required dataset and series"""
-    from urllib2 import urlopen
+    """Return csv file url for required dataset and series"""
     # Clean input parameters
     dataset = dataset.lower().strip()
     series = [s.upper().replace(" ", "") for s in series]
     # Grab the raw csv
     target_url = 'http://www.ons.gov.uk/ons/datasets-and-tables/downloads/csv.csv?dataset=' + dataset \
         + '&cdid=' + ','.join(series)
-    return urlopen(target_url)
+    return target_url
 
 
 def _create_quarterly_index(dfindex):
@@ -181,15 +180,15 @@ def _get_pubfin_data():
     as a pandas panel object
     """
 
+    import requests
     from zipfile import ZipFile
-    from urllib2 import urlopen
     from StringIO import StringIO
 
     zipFileURL = "http://www.imf.org/external/pubs/ft/wp/2013/data/wp1305.zip"
     xlsx_name = "Historical Public Finance Dataset_1.xlsx"
 
-    IMFzip = urlopen(zipFileURL)
-    IMFdata = ZipFile(StringIO(IMFzip.read()))
+    IMFzip = requests.get(zipFileURL)
+    IMFdata = ZipFile(StringIO(IMFzip.content))
     dfraw = pd.read_excel(IMFdata.open(xlsx_name), "data")
     df = dfraw.set_index(['country', 'year'])
 
@@ -216,13 +215,10 @@ def float_convert(s):
 def _get_weo_data():
     """Return the IMF WEO dataset as a pandas panel object"""
 
-    from urllib2 import urlopen
-
     FileURL = "http://www.imf.org/external/pubs/ft/weo/2013/02/weodata/WEOOct2013all.xls"
 
     # Read in raw table
-    IMFweo = urlopen(FileURL)
-    dfraw = pd.read_table(IMFweo,
+    dfraw = pd.read_table(FileURL,
                           na_values=['n/a', '--'])
 
     # Drop unneeded columns

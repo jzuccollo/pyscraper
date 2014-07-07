@@ -15,7 +15,7 @@ setup(name='pydatafuncs',
       license='MIT',
       packages=['pydatafuncs'],
       install_requires=[
-          'pandas', 'numpy', 'urllib2', 'matplotlib'
+          'pandas', 'numpy', 'requests', 'matplotlib'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

@@ -2,11 +2,24 @@
 
 A script to scrape series from the UK Office for National Statistics, Bank of England, and International Monetary Fund. A few utility and computational tools are also included.
 
-## Installation
+##Installation
 
-Unpack the tarball and install with `python setup.py install`.
+###Basic
 
-## `scrape` module
+Download and unpack the files from Github, then run `python setup.py install` in the root directory.
+
+###Pip
+
+To install with `pip` run
+
+    python setup.py sdist
+    pip install dist\pydatafuncs-X.X.X.zip
+
+where `X.X.X` is the version number.
+
+##Usage
+
+### `scrape` module
 
 Despite the advent of [Quandl](http://www.quandl.com) there are still many series an analyst will need that are only available in spreadsheets. The functions here will pull your desired time series into a pandas dataframe. There are three core functions in the module:
 
@@ -16,7 +29,7 @@ Despite the advent of [Quandl](http://www.quandl.com) there are still many serie
 
 See docstrings for syntax details.
 
-## `deseasonalise` module
+### `deseasonalise` module
 
 Python wrapper on X-13ARIMA-SEATS to deseasonalise time series data. Takes and returns a `pandas` dataframe. Requires [X-13ARIMA-SEATS](https://www.census.gov/srd/www/x13as/) executable to be installed. Module has one function, `deseasonalise`, which takes either a dataframe or series and returns the same adjusted.
 

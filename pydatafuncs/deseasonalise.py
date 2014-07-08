@@ -15,7 +15,7 @@ def _make_data(name, ser, freq):
     tmpdf = pd.DataFrame.from_records(transpose([ser.index.year,
         ser.index.month * freq / 12]))
     tmpdf['vals'] = ser.values
-    tmpdf.to_csv(name + '.dat', sep='\t', header=False, index=False)
+    tmpdf.dropna().to_csv(name + '.dat', sep='\t', header=False, index=False)
 
 
 # Create .spc file from template.spc
@@ -65,8 +65,9 @@ def _read_results(name):
                          parse_dates=True,
                          date_parser=_parse,
                          header=None,
-                         #names=['date', 'seas_adj'],
                          skiprows=2)
+
+
 
 
 def _deseas_series(ser, freq):
@@ -81,7 +82,7 @@ def _deseas_series(ser, freq):
         _make_spec(curr_dir, name, freq)
         _make_meta(name)
         output, errors = _run_x13(name)
-        #print output
+        print errors
         results = _read_results(name)
     finally:
         try:

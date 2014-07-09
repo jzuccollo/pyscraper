@@ -17,7 +17,7 @@ regression{
     print = none
 }
 outlier{
-    types = ( AO LS )
+    types = ( $outliers )
 }
 automdl{
     savelog = amd
@@ -28,6 +28,7 @@ forecast{
     print = none
 }
 estimate{
+    maxiter = 3000
     print = none
     savelog = (aicc aic bic hq afc)
 }

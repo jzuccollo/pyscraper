@@ -21,7 +21,7 @@ def _make_data(name, ser, freq):
 
 
 # Create .spc file from template.spc
-def _make_spec(name, freq,  **kwargs):
+def _make_spec(name, freq, **kwargs):
     """Write an X-13 spec file"""
 
     from pkg_resources import resource_stream
@@ -61,15 +61,15 @@ def _run_x13(name):
 
 
 # Read output into pandas dataframe
-def _parse(x):
+def _parse(datestr):
     """Custom date-parsing function to read X-13 results file"""
 
     from calendar import monthrange
 
-    yr = int(str(x)[:4])
-    mnth = 3 * int(str(x)[-2:])
-    day = monthrange(yr, mnth)[1]
-    return pd.datetime(yr, mnth, day)
+    year = int(str(datestr)[:4])
+    mnth = 3 * int(str(datestr)[-2:])
+    day = monthrange(year, mnth)[1]
+    return pd.datetime(year, mnth, day)
 
 
 def _read_results(name):
@@ -96,8 +96,8 @@ def _deseas_series(ser, freq, **kwargs):
         _make_meta(name)
         output, errors = _run_x13(name)
         results = _read_results(name)
-    except Exception as e:
-        print e
+    except Exception as excep:
+        print excep
         with open(name + '.err', 'r') as fin:
             print fin.read()
         results = None
@@ -135,4 +135,4 @@ def deseasonalise(df, freq, **kwargs):
     elif type(df) == pd.core.series.Series:
         return _deseas_series(df, freq)
     else:
-        print("Not a pandas dataframe or series.")
+        print "Not a pandas dataframe or series."

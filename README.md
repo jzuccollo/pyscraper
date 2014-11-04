@@ -1,4 +1,4 @@
-#pydatafuncs
+#pyscraper
 
 A script to scrape series from the UK Office for National Statistics, Bank of England, and International Monetary Fund. A few utility and computational tools are also included.
 

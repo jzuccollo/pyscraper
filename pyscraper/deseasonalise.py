@@ -32,7 +32,7 @@ def _make_spec(name, freq, **kwargs):
     subs_dict = {'dat_file': '"' + name + '.dat"',
                  'period': freq,
                  'outliers': 'AO LS'}
-    for key, value in kwargs.iteritems():
+    for key, value in kwargs.items():
         subs_dict[key] = value
     result = src.substitute(subs_dict)
     with open(name + ".spc", "w") as spec_file:
@@ -97,9 +97,9 @@ def _deseas_series(ser, freq, **kwargs):
         output, errors = _run_x13(name)
         results = _read_results(name)
     except Exception as excep:
-        print excep
+        print(excep)
         with open(name + '.err', 'r') as fin:
-            print fin.read()
+            print(fin.read())
         results = None
     finally:
         try:
@@ -126,8 +126,8 @@ def deseasonalise(df, freq, **kwargs):
     """
     if type(df) == pd.core.frame.DataFrame:
         ds_dict = {}
-        for name, ser in df.iteritems():
-            print "Processing", name, "\n"
+        for name, ser in df.items():
+            print("Processing", name, "\n")
             ds_dict[name] = _deseas_series(ser, freq, **kwargs)
         ds_df = pd.concat(ds_dict, axis=1)
         ds_df.columns = ds_df.columns.droplevel(level=1)
@@ -135,4 +135,4 @@ def deseasonalise(df, freq, **kwargs):
     elif type(df) == pd.core.series.Series:
         return _deseas_series(df, freq)
     else:
-        print "Not a pandas dataframe or series."
+        print("Not a pandas dataframe or series.")

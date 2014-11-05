@@ -66,7 +66,7 @@ def from_ONS(dataset, series, freq):
     dfraw = pd.read_csv(myfile)
     criterion = dfraw['Unnamed: 0'].str.contains(re_dict[freq], na=False)
     if dfraw[criterion].empty:
-        print "That frequency is unavailable for your series."
+        print("That frequency is unavailable for your series.")
         return
     else:
         df = _timeseries_index(dfraw[criterion], freq)
@@ -182,7 +182,7 @@ def _get_pubfin_data():
 
     import requests
     from zipfile import ZipFile
-    from StringIO import StringIO
+    from io import StringIO
 
     zipFileURL = "http://www.imf.org/external/pubs/ft/wp/2013/data/wp1305.zip"
     xlsx_name = "Historical Public Finance Dataset_1.xlsx"
@@ -209,7 +209,7 @@ def float_convert(s):
     elif isinstance(s, float):
         return s
     else:
-        print "Encountered type", type(s)
+        print("Encountered type", type(s))
 
 
 def _get_weo_data():
@@ -222,14 +222,14 @@ def _get_weo_data():
                           na_values=['n/a', '--'])
 
     # Drop unneeded columns
-    keep_cols = [u'WEO Subject Code', u'Country']
+    keep_cols = ['WEO Subject Code', 'Country']
     for i in dfraw.columns.values:
         if i.isdigit():
             keep_cols.append(i)
     dfdropped = dfraw[keep_cols]
 
     # Set multiindex
-    dfdropped.set_index([u'Country', u'WEO Subject Code'], inplace=True)
+    dfdropped.set_index(['Country', 'WEO Subject Code'], inplace=True)
 
     # Reshape so variables are the columns
     dfdropped = dfdropped.stack().unstack(level=1)

@@ -37,7 +37,7 @@ def ipynb_git_stripper(filenames):
                 current.write(notebook, f, format='ipynb')
 
             # Run git add to stage the non-output changes
-            print("git add", filename)
+            print(("git add", filename))
             Popen(["git", "add", filename]).wait()
 
         finally:

@@ -23,8 +23,8 @@ def cagr(ser, end, freq='A', yrs=4):
     cagr_val = 100 * \
         ((ser[end] / ser[end - periods * freq_offset[freq]])
          ** (1. / yrs) - 1.)
-    print 'The CAGR for the', yrs, 'years to', month_name[end.month], end.year, 'is', \
-        round(cagr, 2), 'per cent per annum.'
+    print('The CAGR for the', yrs, 'years to', month_name[end.month], end.year, 'is', \
+        round(cagr, 2), 'per cent per annum.')
 
     return cagr_val
 

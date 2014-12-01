@@ -92,7 +92,7 @@ def _get_initial_date(yearsback):
     except ValueError:
         initial_date = initial_date.replace(
             year=initial_date.year - yearsback, day=initial_date.day - 1)
-    return initial_date.strftime("%d/%b/%Y")
+    return initial_date
 
 
 def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
@@ -114,9 +114,12 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
 
     Optional arguments:
 
-       vpd:	Include provisional data? ('Y' or 'N')
+       vpd: Include provisional data? ('Y' or 'N')
 
     """
+
+    assert isinstance(series, list), "Input series must be a list."
+    assert isinstance(datefrom, datetime.datetime), "Date must be datetime.datetime."
 
     Datefrom = datefrom if datefrom is not None else _get_initial_date(
         yearsback)
@@ -132,7 +135,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
         + '&UsingCodes=' + UsingCodes \
         + '&CSVF=' + CSVF \
         + '&VPD=' + VPD
-
+    print("CSV retrieved from", url)
     return pd.read_csv(url, index_col=0, parse_dates=True, header=0)
 
 # IMF IMPORTER

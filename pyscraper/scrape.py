@@ -109,7 +109,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     Returns:
         df: Pandas dataframe of time series
 
-    eg. df = from_BoE(['LPMAUZI', 'LPMAVAA'], datefrom=pd.datetime(2007, 08, 01))
+    eg. df = from_BoE(['LPMAUZI', 'LPMAVAA'], datefrom=pd.datetime(2007, 8, 1))
 
 
     Optional arguments:
@@ -117,9 +117,7 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
        vpd: Include provisional data? ('Y' or 'N')
 
     """
-
-    assert isinstance(series, list), "Input series must be a list."
-    assert isinstance(datefrom, datetime.datetime), "Date must be datetime.datetime."
+    import datetime
 
     Datefrom = datefrom if datefrom is not None else _get_initial_date(
         yearsback)
@@ -128,6 +126,10 @@ def from_BoE(series, datefrom=None, yearsback=5, vpd='y'):
     UsingCodes = 'Y'
     CSVF = 'TN'
     VPD = vpd
+
+    assert isinstance(series, list), "Input series must be a list."
+    assert isinstance(
+        Datefrom, datetime.datetime), "Date must be datetime.datetime."
 
     url = 'http://www.bankofengland.co.uk/boeapps/iadb/fromshowcolumns.asp?csv.x=yes&Datefrom=' + Datefrom.strftime("%d/%b/%Y") \
         + '&Dateto=' + Dateto \

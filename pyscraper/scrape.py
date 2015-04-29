@@ -33,8 +33,10 @@ def _timeseries_index(df, freq):
     df2 = df.set_index('Unnamed: 0')
     if freq == 'Q':
         df2.index = _create_quarterly_index(df2.index)
-    else:
-        df2.index = pd.to_datetime(df2.index, errors='raise')
+    elif freq == 'M':
+        df2.index = pd.to_datetime(df2.index, format='%Y %b', errors='raise')
+    elif freq == 'Y':
+        df2.index = pd.to_datetime(df2.index, format='%Y', errors='raise')
     return df2
 
 

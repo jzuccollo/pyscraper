@@ -38,7 +38,7 @@ def _timeseries_index(df, freq):
     return df2
 
 
-def from_ONS(dataset, series, freq):
+def from_ONS(dataset, series, freq, print_url=False):
     """
 
     Function to download specific series from the ONS website and
@@ -63,6 +63,8 @@ def from_ONS(dataset, series, freq):
 
     freq = freq.upper()
     myfile = _retrieve_ONS_csv(dataset, series)
+    if print_url:
+        print(myfile)
     dfraw = pd.read_csv(myfile)
     criterion = dfraw['Unnamed: 0'].str.contains(re_dict[freq], na=False)
     if dfraw[criterion].empty:

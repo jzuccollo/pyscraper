@@ -124,7 +124,7 @@ def deseasonalise(df, freq, **kwargs):
     Returns:
         df: pandas dataframe of seasonally adjusted series
     """
-    if type(df) == pd.core.frame.DataFrame:
+    if isinstance(df, pd.core.frame.DataFrame):
         ds_dict = {}
         for name, ser in df.items():
             print("Processing", name, "\n")
@@ -132,7 +132,7 @@ def deseasonalise(df, freq, **kwargs):
         ds_df = pd.concat(ds_dict, axis=1)
         ds_df.columns = ds_df.columns.droplevel(level=1)
         return ds_df
-    elif type(df) == pd.core.series.Series:
+    elif isinstance(df, pd.core.series.Series):
         return _deseas_series(df, freq)
     else:
         print("Not a pandas dataframe or series.")

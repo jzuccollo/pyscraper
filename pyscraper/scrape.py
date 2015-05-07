@@ -191,14 +191,15 @@ def _get_pubfin_data():
 
     import requests
     from zipfile import ZipFile
-    from io import StringIO
+    from io import BytesIO
 
     zipFileURL = "http://www.imf.org/external/pubs/ft/wp/2013/data/wp1305.zip"
     xlsx_name = "Historical Public Finance Dataset_1.xlsx"
 
     IMFzip = requests.get(zipFileURL)
-    IMFdata = ZipFile(StringIO(IMFzip.content))
-    dfraw = pd.read_excel(IMFdata.open(xlsx_name), "data")
+    IMFdata = ZipFile(BytesIO(IMFzip.content))
+    IMFxlsx = IMFdata.open(xlsx_name)
+    dfraw = pd.read_excel(IMFxlsx, sheetname="data")
     df = dfraw.set_index(['country', 'year'])
 
     #yr_one = int(df.index.levels[1][0])

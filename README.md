@@ -5,7 +5,6 @@ Various functions to ease working with time series in `pandas`.
  - Scrape series from the UK Office for National Statistics, Bank of England, and International Monetary Fund.
  - Use X-13ARIMA-SEATS to deseasonalise time series
  - Compute CAGRs and trends
- - Git version IPython notebooks without the output.
 
 ##Installation
 
@@ -37,13 +36,9 @@ Despite the advent of [Quandl](http://www.quandl.com) there are still many serie
 
 Python wrapper on X-13ARIMA-SEATS to deseasonalise time series data. Takes and returns a `pandas` dataframe. Requires [X-13ARIMA-SEATS](https://www.census.gov/srd/www/x13as/) executable to be installed. Module has one function, `deseasonalise`, which takes either a dataframe or series and returns the same adjusted.
 
-Note that the path to X-13 is hardcoded in `deseasonalise.py` as `C:/Program Files (x86)/winx13/x13as/x13as.exe`.
+The default path to X-13 is `C:/Program Files (x86)/x13as/x13as.exe` but can be changed in `config.py`.
 
 ### `compute` module
 
  - `cagr(ser, end, freq='A', yrs=4)`: Calculates the compound annual growth rate of the time series.
  - `trend(ser, start=pd.datetime(1998, 3, 31), yrs=5)`: Calculate the trend line of the time series.
-
-### `utils` module
-
- - `ipynb_git_stripper(filenames)`: Strip output from IPython notebook and stage in git. Restores the original file once staged.

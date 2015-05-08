@@ -15,7 +15,8 @@ setup(name='pyscraper',
       license='MIT',
       packages=['pyscraper'],
       install_requires=[
-          'pandas', 'numpy', 'requests', 'matplotlib'
+          'pandas', 'numpy', 'requests', 'matplotlib', 'statsmodels',
+          'scipy'
       ],
       test_suite='nose.collector',
       tests_require=['nose'],

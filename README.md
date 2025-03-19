@@ -1,4 +1,6 @@
-#pyscraper
+# pyscraper
+
+**UPDATE: this isn't maintained or needed any more so it's archived.**
 
 Various functions to ease working with time series in `pandas`.
 
@@ -6,13 +8,13 @@ Various functions to ease working with time series in `pandas`.
  - Use X-13ARIMA-SEATS to deseasonalise time series
  - Compute CAGRs and trends
 
-##Installation
+## Installation
 
-###Basic
+### Basic
 
 Download and unpack the files from Github, then run `python setup.py install` in the root directory.
 
-###Pip
+### Pip
 
 To install with `pip` run
 
@@ -21,7 +23,7 @@ To install with `pip` run
 
 where `X.X.X` is the version number.
 
-##Usage
+## Usage
 
 ### `scrape` module
 
